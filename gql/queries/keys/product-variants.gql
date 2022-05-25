@@ -1,0 +1,8 @@
+query ProductVariantKeys {
+  productVariants {
+    items {
+      id
+      sku
+    }
+  }
+}

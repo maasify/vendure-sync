@@ -1,0 +1,8 @@
+query CollectionKeys {
+  collections {
+    items {
+      id
+      slug
+    }
+  }
+}

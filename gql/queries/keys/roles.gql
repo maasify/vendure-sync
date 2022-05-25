@@ -1,0 +1,8 @@
+query RoleKeys {
+  roles {
+    items {
+      id
+      code
+    }
+  }
+}

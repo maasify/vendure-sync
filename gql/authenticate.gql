@@ -1,0 +1,15 @@
+mutation Authenticate($token: String!) {
+  authenticate(input: { keycloak: { token: $token } }) {
+    ... on CurrentUser {
+      id
+      identifier
+      channels {
+        id
+        code
+      }
+    }
+    ... on ErrorResult {
+      message
+    }
+  }
+}

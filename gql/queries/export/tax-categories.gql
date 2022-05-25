@@ -1,0 +1,6 @@
+query TaxCategories {
+  taxCategories {
+    name
+    isDefault
+  }
+}

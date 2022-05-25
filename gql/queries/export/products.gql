@@ -1,0 +1,115 @@
+query Products {
+  products(options: { sort: { name: ASC } }) {
+    items {
+      slug
+      enabled
+      customFields {
+        networks
+        service
+        type
+        paymentTypes
+        paymentCards
+        autoActivation
+        allowCustomPrice
+        maxQuantity
+        isTest
+        rrule
+        rruleProduct
+        cardRemainingDays
+        walletMinAmount
+        autoValidation
+        minPassengers
+        maxPassengers
+        duration
+        maxValidationDelay
+        maxValidation
+        validationDuration
+        allowedTripsType
+        allowTransfer
+        ageFrom
+        ageUntil
+        quantityAsPassengers
+        profiles
+        conditions
+      }
+      translations {
+        languageCode
+        name
+        slug
+        description
+      }
+      assets {
+        name
+      }
+      facetValues {
+        id
+        code
+        facet {
+          code
+        }
+      }
+      featuredAsset {
+        name
+      }
+      variantList(options: { sort: { name: ASC } }) {
+        items {
+          sku
+          priceWithTax
+          taxCategory {
+            name
+          }
+          customFields {
+            externalId
+            dateFrom
+            dateUntil
+            publicationDateFrom
+            publicationDateUntil
+          }
+          translations {
+            languageCode
+            name
+          }
+          facetValues {
+            code
+            facet {
+              code
+            }
+          }
+          featuredAsset {
+            name
+          }
+          assets {
+            name
+          }
+          options {
+            code
+            group {
+              code
+            }
+          }
+          outOfStockThreshold
+          stockOnHand
+          trackInventory
+          useGlobalOutOfStockThreshold
+        }
+      }
+      optionGroups {
+        code
+        translations {
+          languageCode
+          name
+        }
+        options {
+          code
+          group {
+            code
+          }
+          translations {
+            languageCode
+            name
+          }
+        }
+      }
+    }
+  }
+}

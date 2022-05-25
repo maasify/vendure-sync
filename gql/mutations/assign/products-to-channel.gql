@@ -1,0 +1,5 @@
+mutation AssignProductsToChannel($input: AssignProductsToChannelInput!) {
+  assignProductsToChannel(input: $input) {
+    id
+  }
+}

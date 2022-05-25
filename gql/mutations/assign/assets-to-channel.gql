@@ -1,0 +1,5 @@
+mutation AssignAssetsToChannel($input: AssignAssetsToChannelInput!) {
+  assignAssetsToChannel(input: $input) {
+    id
+  }
+}

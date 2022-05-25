@@ -1,0 +1,20 @@
+query Facets {
+  facets(options: { sort: { code: ASC } }) {
+    items {
+      code
+      isPrivate  
+      values {
+        id
+        code
+        translations {
+          languageCode
+          name
+        }
+      }
+      translations {
+        languageCode
+        name
+      }
+    }
+  }
+}

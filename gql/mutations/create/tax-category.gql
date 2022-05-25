@@ -1,0 +1,5 @@
+mutation CreateTaxCategory($input: CreateTaxCategoryInput!) {
+  createTaxCategory(input: $input) {
+    id
+  }
+}

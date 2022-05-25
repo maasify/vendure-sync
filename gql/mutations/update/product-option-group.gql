@@ -1,0 +1,9 @@
+mutation UpdateProductOptionGroup($input: UpdateProductOptionGroupInput!) {
+  updateProductOptionGroup(input: $input) {
+    id
+    options {
+      id
+      code
+    }
+  }
+}

@@ -1,0 +1,8 @@
+query ShippingMethodKeys {
+  shippingMethods {
+    items {
+      id
+      code
+    }
+  }
+}

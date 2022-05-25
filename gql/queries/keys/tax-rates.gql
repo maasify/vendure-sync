@@ -1,0 +1,8 @@
+query TaxRateKeys {
+  taxRates {
+    items {
+      id
+      name
+    }
+  }
+}

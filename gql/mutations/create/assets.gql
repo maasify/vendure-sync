@@ -1,0 +1,10 @@
+mutation CreateAssets($input: [CreateAssetInput!]!) {
+  createAssets(input: $input) {
+    ... on Asset {
+      id
+    }
+    ... on MimeTypeError {
+      message
+    }
+  }
+}

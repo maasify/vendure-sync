@@ -1,0 +1,8 @@
+query CountryKeys {
+  countries {
+    items {
+      id
+      code
+    }
+  }
+}

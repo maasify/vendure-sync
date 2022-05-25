@@ -1,0 +1,6 @@
+query TaxCategoryKeys {
+  taxCategories {
+    id
+    name
+  }
+}

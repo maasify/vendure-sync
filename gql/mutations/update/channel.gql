@@ -1,0 +1,10 @@
+mutation UpdateChannel($input: UpdateChannelInput!) {
+  updateChannel(input: $input) {
+    ... on Channel {
+      id
+    }
+    ... on LanguageNotAvailableError {
+      message
+    }
+  }
+}

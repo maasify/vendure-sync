@@ -1,0 +1,24 @@
+query PaymentMethods {
+  paymentMethods(options: { sort: { name: ASC } }) {
+    items {
+      name
+      code
+      description
+      enabled
+      checker {
+        code
+        args {
+          name
+          value
+        }
+      }
+      handler {
+          code
+          args {
+              name
+              value
+          }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+mutation CreateChannel($input: CreateChannelInput!) {
+  createChannel(input: $input) {
+    ... on Channel {
+      id
+    }
+    ... on LanguageNotAvailableError {
+      message
+    }
+  }
+}

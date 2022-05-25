@@ -1,0 +1,11 @@
+query FacetValueKeys {
+  facets {
+    items {
+      code
+      values {
+        id
+        code
+      }
+    }
+  }
+}

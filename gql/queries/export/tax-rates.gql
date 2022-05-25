@@ -1,0 +1,15 @@
+query TaxRates {
+  taxRates(options: { sort: { name: ASC } }) {
+    items {
+      name
+      value
+      enabled
+      category {
+          name
+      }
+      zone {
+          name
+      }
+    }
+  }
+}

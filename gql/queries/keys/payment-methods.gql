@@ -1,0 +1,8 @@
+query PaymentMethodKeys {
+  paymentMethods {
+    items {
+      id
+      code
+    }
+  }
+}

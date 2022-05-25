@@ -1,0 +1,8 @@
+query AssetKeys {
+  assets {
+    items {
+      id
+      name
+    }
+  }
+}

@@ -1,0 +1,12 @@
+query Roles {
+  roles(options: { filter: { code: {notIn: ["__super_admin_role__", "__customer_role__"]}}}) {
+    items {
+      code
+      description
+      permissions
+      channels {
+        code
+      }
+    }
+  }
+}

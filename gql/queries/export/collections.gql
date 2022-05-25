@@ -1,0 +1,31 @@
+query Collections {
+  collections(options: { sort: { name: ASC } }) {
+    items {
+      slug
+      parent {
+        slug
+      }
+      isPrivate
+      position
+      filters {
+        code
+        args {
+          name
+          value
+        }
+      }
+      featuredAsset {
+        name
+      }
+      assets {
+        name
+      }
+      translations {
+        languageCode
+        name
+        slug
+        description
+      }
+    }
+  }
+}

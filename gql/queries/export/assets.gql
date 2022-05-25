@@ -1,0 +1,11 @@
+query Assets {
+  assets(options: { sort: { name: ASC } }) {
+    items {
+      name
+      source
+      tags {
+        value
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+query ShippingMethods {
+  shippingMethods(options: { sort: { name: ASC } }) {
+    items {
+      code
+      fulfillmentHandlerCode
+      checker {
+        code
+        args {
+          name
+          value
+        }
+      }
+      calculator {
+        code
+        args {
+          name
+          value
+        }
+      }
+      translations {
+        languageCode
+        name
+        description
+      }
+    }
+  }
+}

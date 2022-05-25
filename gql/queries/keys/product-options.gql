@@ -1,0 +1,15 @@
+query ProductOptionKeys {
+  products {
+    items {
+      slug
+      optionGroups {
+        id
+        code
+        options {
+          id
+          code
+        }
+      }
+    }
+  }
+}

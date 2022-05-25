@@ -1,0 +1,15 @@
+query Channels {
+  channels {
+    code
+    token
+    defaultTaxZone {
+      name
+    }
+    defaultShippingZone {
+      name
+    }
+    defaultLanguageCode
+    currencyCode
+    pricesIncludeTax
+  }
+}

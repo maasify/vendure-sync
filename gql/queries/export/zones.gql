@@ -1,0 +1,5 @@
+query Zones {
+  zones {
+    name
+  }
+}

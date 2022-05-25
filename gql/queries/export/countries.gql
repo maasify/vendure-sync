@@ -1,0 +1,12 @@
+query Countries {
+  countries(options: { sort: { name: ASC } }) {
+    items {
+      code
+      enabled
+      translations {
+        languageCode
+        name
+      }
+    }
+  }
+}
