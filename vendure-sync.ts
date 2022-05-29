@@ -61,7 +61,7 @@ async function getVendureSyncConfig(options: VendureExportOptions): Promise<Vend
   return {
     sourceDir: path.normalize(options.directory),
     sdk,
-    headers: await (() => {
+    headers: await (async () => {
       // Token has the priority
       if (options.token) {
         return {
@@ -69,7 +69,8 @@ async function getVendureSyncConfig(options: VendureExportOptions): Promise<Vend
         } as VendureSyncHeader;
       }
       if (options.keycloak) {
-        return authenticate(options.keycloak, sdk);
+        const token = await authenticateKeycloak(options.keycloak);
+        return authenticate(sdk, token);
       }
 
       return program.error('You must authenticate using --token or --keycloak option');
@@ -80,13 +81,29 @@ async function getVendureSyncConfig(options: VendureExportOptions): Promise<Vend
 /**
  * Authenticate to Vendure Admin API
  */
-async function authenticate(keycloakUri: string, sdk: Sdk): Promise<VendureSyncHeader> {
+async function authenticate(sdk: Sdk, token: string): Promise<VendureSyncHeader> {
+  const response = await sdk.Authenticate({ token: token });
+  return {
+    authorization: `Bearer ${response.headers.get('vendure-auth-token')}`,
+  };
+}
+
+/**
+ * Authenticate to Keycloak using client_id & client_secret
+ */
+async function authenticateKeycloak(keycloakUri: string): Promise<string> {
   const url = new URL(keycloakUri);
   const clientId = url.username;
   const clientPassword = url.password;
   url.username = '';
   url.password = '';
   const endpoint = url.toString();
+
+  if (!clientId || !clientPassword || !endpoint) {
+    return program.error(
+      `Url ${keycloakUri} must be as https://clientId:clientSecret@auth.mydomain.com/auth/realms/myrealm`,
+    );
+  }
 
   const jwtKeycloak: JwtToken = (
     await axios.post(
@@ -104,8 +121,5 @@ async function authenticate(keycloakUri: string, sdk: Sdk): Promise<VendureSyncH
     )
   ).data;
 
-  const response = await sdk.Authenticate({ token: jwtKeycloak.access_token });
-  return {
-    authorization: `Bearer ${response.headers.get('vendure-auth-token')}`,
-  };
+  return jwtKeycloak.access_token;
 }
