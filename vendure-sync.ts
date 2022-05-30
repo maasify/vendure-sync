@@ -57,7 +57,7 @@ async function getVendureSyncConfig(options: VendureExportOptions): Promise<Vend
   })();
 
   return {
-    sourceDir: path.normalize(options.directory),
+    sourceDir: path.resolve(options.directory),
     sdk,
     headers: await (async () => {
       // Token has the priority
