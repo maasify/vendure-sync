@@ -1,12 +1,12 @@
 import * as path from 'path';
 import axios from 'axios';
 import { Command } from 'commander';
-//import { vendureExport } from './libs/vendure.export';
+import { vendureExport } from './libs/vendure.export';
 //import { vendureImport } from './libs/vendure.import';
 import { GraphQLClient } from 'graphql-request';
 import { getSdk, Sdk } from './generated';
-import { VendureSyncConfig } from 'libs/config.interface';
-import { VendureSyncHeader } from 'libs/header.type';
+import { VendureSyncConfig } from './libs/config.interface';
+import { VendureSyncHeader } from './libs/header.type';
 
 const TOKEN_PREFIX = 'token:';
 
@@ -35,9 +35,7 @@ program
   .option('-t, --token <token>', 'Vendure token to use')
   .option('-k, --keycloak <keycloak>', 'https://clientId:clientSecret@keycloak.mydomain.io')
   .action(async (url: string, options) => {
-    console.log(await getVendureSyncConfig({ ...options, url }));
-
-    //    return vendureExport(await getVendureSyncConfig(program.opts()));
+    vendureExport(await getVendureSyncConfig({ ...options, url }));
   });
 
 program
