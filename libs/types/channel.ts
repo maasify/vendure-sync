@@ -1,4 +1,4 @@
-import { VendureSyncAbstract } from './abstract';
+import { EntityKey, VendureSyncAbstract } from './abstract';
 import { Channel } from 'generated';
 
 export class VendureSyncChannel
@@ -13,5 +13,16 @@ export class VendureSyncChannel
       data: { channels },
     } = await this.config.sdk.Channels(undefined, this.config.headers);
     return channels;
+  }
+
+  async keys() {
+    return (await this.config.sdk.ChannelKeys(undefined, this.config.headers)).data.channels;
+  }
+
+  /**
+   * Should return the semantic identifier from type
+   */
+  key(channel: Channel): string {
+    return channel.code;
   }
 }

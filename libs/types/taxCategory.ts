@@ -14,4 +14,15 @@ export class VendureSyncTaxCategory
     } = await this.config.sdk.TaxCategories(undefined, this.config.headers);
     return taxCategories;
   }
+
+  async keys() {
+    return (await this.config.sdk.TaxCategoryKeys(undefined, this.config.headers)).data.taxCategories;
+  }
+
+  /**
+   * Should return the semantic identifier from type
+   */
+  key(taxCategory: TaxCategory): string {
+    return taxCategory.name;
+  }
 }

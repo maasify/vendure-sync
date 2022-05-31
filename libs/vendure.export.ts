@@ -1,5 +1,6 @@
 import path from 'path';
 import * as fs from 'fs';
+import { Channel } from 'generated';
 import { VendureSyncConfig } from './config.interface';
 import { VendureSyncZone } from './types/zone';
 import { VendureSyncAbstract } from './types/abstract';
@@ -10,7 +11,6 @@ import { VendureSyncRole } from './types/role';
 import { VendureSyncShippingMethod } from './types/shippingMethod';
 import { VendureSyncTaxCategory } from './types/taxCategory';
 import { VendureSyncTaxRate } from './types/taxRate';
-import { Channel } from 'generated';
 import { VendureSyncAsset } from './types/asset';
 import { VendureSyncCollection } from './types/collection';
 import { VendureSyncFacet } from './types/facet';
@@ -38,7 +38,7 @@ export async function vendureExport(config: VendureSyncConfig) {
   await exportType(new VendureSyncRole(config));
 
   /**
-   * Export all channels
+   * Read the generated channel list
    */
   const channels: Channel[] = require(path.join(config.sourceDir, 'channel.json'));
 

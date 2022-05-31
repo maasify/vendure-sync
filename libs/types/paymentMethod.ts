@@ -14,4 +14,15 @@ export class VendureSyncPaymentMethod
     } = await this.config.sdk.PaymentMethods(undefined, this.config.headers);
     return paymentMethods;
   }
+  
+  async keys() {
+    return (await this.config.sdk.PaymentMethodKeys(undefined, this.config.headers)).data.paymentMethods.items;
+  }
+
+  /**
+   * Should return the semantic identifier from type
+   */
+  key(paymentMethod: PaymentMethod): string {
+    return paymentMethod.code;
+  }
 }

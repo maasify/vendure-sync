@@ -1,4 +1,4 @@
-import { VendureSyncAbstract } from './abstract';
+import { EntityKey, VendureSyncAbstract } from './abstract';
 import { Facet } from 'generated';
 
 export class VendureSyncFacet
@@ -13,5 +13,16 @@ export class VendureSyncFacet
       data: { facets },
     } = await this.config.sdk.Facets(undefined, this.config.headers);
     return facets;
+  }
+
+  async keys() {
+    return (await this.config.sdk.FacetKeys(undefined, this.config.headers)).data.facets.items;
+  }
+
+  /**
+   * Should return the semantic identifier from type
+   */
+  key(facet: Facet): string {
+    return facet.code;
   }
 }

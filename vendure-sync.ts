@@ -2,7 +2,7 @@ import * as path from 'path';
 import axios from 'axios';
 import { Command } from 'commander';
 import { vendureExport } from './libs/vendure.export';
-//import { vendureImport } from './libs/vendure.import';
+import { vendureImport } from './libs/vendure.import';
 import { GraphQLClient } from 'graphql-request';
 import { getSdk, Sdk } from './generated';
 import { VendureSyncConfig } from './libs/config.interface';
@@ -15,6 +15,7 @@ type VendureExportOptions = {
   directory: string; // has default value
   token?: string;
   keycloak?: string;
+  channel?: string;
 };
 
 type JwtToken = {
@@ -25,24 +26,30 @@ type JwtToken = {
 const program = new Command();
 program
   .description('Command line tool to import / export Vendure catalog')
-  .version(require('./package.json').version);
+  .version(require('./package.json').version)
 
 program
   .command('export')
   .description('Export Vendure catalog and settings into export/ directory')
   .argument('<url>', 'Vendure url to export')
-  .option('-d, --directory <directory>', 'Directory to store exported files', './export')
+  .option('-d, --directory <directory>', 'Location of the Vendure export files', './export')
   .option('-t, --token <token>', 'Vendure token to use')
   .option('-k, --keycloak <keycloak>', 'https://clientId:clientSecret@keycloak.mydomain.io')
+  .option('-c, --channel <channel>', 'Channel to handle. All if undefined')
   .action(async (url: string, options) => {
     vendureExport(await getVendureSyncConfig({ ...options, url }));
   });
 
 program
-  .command('import <channel>')
+  .command('import')
   .description('Import Vendure data from export/ directory')
-  .action(async (channel: string) => {
-    //    return vendureImport(`${__dirname}/export`, channel);
+  .argument('<url>', 'Vendure url to import to')
+  .option('-d, --directory <directory>', 'Location of the Vendure export files', './export')
+  .option('-t, --token <token>', 'Vendure token to use')
+  .option('-k, --keycloak <keycloak>', 'https://clientId:clientSecret@keycloak.mydomain.io')
+  .option('-c, --channel <channel>', 'Channel to handle. All if undefined')
+  .action(async (url: string, options) => {
+    vendureImport(await getVendureSyncConfig({ ...options, url }));
   });
 
 program.parse(process.argv);

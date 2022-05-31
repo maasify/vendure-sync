@@ -14,5 +14,16 @@ export class VendureSyncProduct
     } = await this.config.sdk.Products(undefined, this.config.headers);
     return products;
   }
+
+  async keys() {
+    return (await this.config.sdk.ProductKeys(undefined, this.config.headers)).data.products.items;
+  }
+
+  /**
+   * Should return the semantic identifier from type
+   */
+  key(product: Product): string {
+    return product.slug;
+  }
 }
 
