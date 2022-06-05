@@ -6,11 +6,8 @@ export class VendureSyncZone extends VendureSyncAbstract<Zone> {
     this.name = 'zone';
   }
 
-  async export(): Promise<Partial<Zone>[]> {
-    const {
-      data: { zones },
-    } = await this.config.sdk.Zones(undefined, this.config.headers);
-    return zones;
+  async export() {
+    return (await this.config.sdk.Zones(undefined, this.config.headers)).data.zones;
   }
 
   async keys() {
@@ -25,13 +22,13 @@ export class VendureSyncZone extends VendureSyncAbstract<Zone> {
   }
 
   async insert(zone: Zone) {
-    return await this.config.sdk.CreateZone(
+    return (await this.config.sdk.CreateZone(
       {
         input: {
           name: zone.name,
         },
       },
       this.config.headers,
-    );
+    )).data.createZone.id;
   }
 }

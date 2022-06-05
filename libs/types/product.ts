@@ -9,10 +9,7 @@ export class VendureSyncProduct
   }
 
   async export() {
-    const {
-      data: { products },
-    } = await this.config.sdk.Products(undefined, this.config.headers);
-    return products;
+    return (await this.config.sdk.Products(undefined, this.config.headers)).data.products.items;
   }
 
   async keys() {

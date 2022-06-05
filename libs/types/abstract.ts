@@ -6,6 +6,10 @@ export type EntityKey = {
   key: string;
 };
 
+enum ImportResult {
+  UPDATE,
+  INSERT
+}
 export abstract class VendureSyncAbstract<T> {
   /**
    * A Vendure sync type has access to config
@@ -61,19 +65,30 @@ export abstract class VendureSyncAbstract<T> {
 
   /**
    * The type is often read from exported json file.
-   * 
+   *
    * The function will ask for keys in admin-api
    * And search for uuid. If found, the entity exists.
    */
-  async getUUid(type: T): Promise<string | undefined> {
+  async getUUid(type: T): Promise<string> {
     if (!this._cacheKeys) {
       this._cacheKeys = await this._initCacheKeys();
     }
 
     const key = this.key(type);
 
-    const result = this._cacheKeys!.find((entity) => entity.key === key);
-    return result?.id;
+    const result = this._cacheKeys.find((entity) => entity.key === key);
+    if (!result) {
+      throw `${this.name} ${key} not found...`
+    }
+    return result.id;
+  }
+
+  async _initCacheKeys(): Promise<EntityKey[]> {
+    const entityKeys = await this.keys();
+    return entityKeys.map((entity) => ({
+      id: entity.id,
+      key: this.key(entity),
+    }));
   }
 
   /**
@@ -82,21 +97,49 @@ export abstract class VendureSyncAbstract<T> {
    * @returns The query response (can be an array or a type)
    * @see gql/[type]/export
    */
-  abstract export(): Promise<any>;
+  abstract export(): Promise<any[]>;
 
-  async update(id: string, type: T): Promise<string> {
+  async update(id: string, type: T): Promise<void> {
     throw `Update not yet implemented`;
   }
 
-  async insert(type: T): Promise<any> {
+  async insert(type: T): Promise<string> {
     throw `Insert not yet implemented`;
   }
 
-  async _initCacheKeys(): Promise<EntityKey[]> {
-    const entityKeys = await this.keys();
-    return entityKeys.map(entity => ({
-      id: entity.id,
-      key: this.key(entity)
-    }));
+  /**
+   * Generic import function.
+   * 1. Get uuid for given entity
+   * 2. If found, update entity and update cache key for uuid
+   * 3. If not found, insert entity and add uuid in cache
+   */
+  async import(entity: T): Promise<ImportResult> {
+    const key = this.key(entity);
+    let id = '';
+
+    try {
+      id = await this.getUUid(entity);
+    } catch (e) {
+
+    }
+
+    if (id) {
+      await this.update(id, entity);
+
+      const index = this._cacheKeys.findIndex((entity) => entity.id === id)!;
+      this._cacheKeys[index].key = key;
+
+      return ImportResult.UPDATE;
+    } else {
+      const newId = await this.insert(entity);
+
+      this._cacheKeys.push({
+        id: newId,
+        key,
+      });
+
+      return ImportResult.INSERT;
+
+    }
   }
 }

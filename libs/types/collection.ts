@@ -7,14 +7,13 @@ export class VendureSyncCollection extends VendureSyncAbstract<Collection> {
   }
 
   async export() {
-    const {
-      data: { collections },
-    } = await this.config.sdk.Collections(undefined, this.config.headers);
-    return collections;
+    return (await this.config.sdk.Collections(undefined, this.config.headers)).data.collections
+      .items;
   }
 
   async keys() {
-    return (await this.config.sdk.CollectionKeys(undefined, this.config.headers)).data.collections.items;
+    return (await this.config.sdk.CollectionKeys(undefined, this.config.headers)).data.collections
+      .items;
   }
 
   /**

@@ -9,10 +9,7 @@ export class VendureSyncAsset
   }
 
   async export() {
-    const {
-      data: { assets },
-    } = await this.config.sdk.Assets(undefined, this.config.headers);
-    return assets;
+    return (await this.config.sdk.Assets(undefined, this.config.headers)).data.assets.items;
   }
 
   async keys() {

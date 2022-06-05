@@ -9,10 +9,7 @@ export class VendureSyncFacet
   }
 
   async export() {
-    const {
-      data: { facets },
-    } = await this.config.sdk.Facets(undefined, this.config.headers);
-    return facets;
+    return (await this.config.sdk.Facets(undefined, this.config.headers)).data.facets.items;
   }
 
   async keys() {

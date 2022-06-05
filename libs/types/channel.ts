@@ -9,10 +9,7 @@ export class VendureSyncChannel
   }
 
   async export() {
-    const {
-      data: { channels },
-    } = await this.config.sdk.Channels(undefined, this.config.headers);
-    return channels;
+    return (await this.config.sdk.Channels(undefined, this.config.headers)).data.channels;
   }
 
   async keys() {

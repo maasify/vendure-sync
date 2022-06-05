@@ -1,22 +1,19 @@
 import { VendureSyncAbstract } from './abstract';
 import { PaymentMethod } from 'generated';
 
-export class VendureSyncPaymentMethod
-  extends VendureSyncAbstract<PaymentMethod>
-{
+export class VendureSyncPaymentMethod extends VendureSyncAbstract<PaymentMethod> {
   setName() {
     this.name = 'paymentMethod';
   }
 
   async export() {
-    const {
-      data: { paymentMethods },
-    } = await this.config.sdk.PaymentMethods(undefined, this.config.headers);
-    return paymentMethods;
+    return (await this.config.sdk.PaymentMethods(undefined, this.config.headers)).data
+      .paymentMethods.items;
   }
-  
+
   async keys() {
-    return (await this.config.sdk.PaymentMethodKeys(undefined, this.config.headers)).data.paymentMethods.items;
+    return (await this.config.sdk.PaymentMethodKeys(undefined, this.config.headers)).data
+      .paymentMethods.items;
   }
 
   /**
@@ -24,5 +21,31 @@ export class VendureSyncPaymentMethod
    */
   key(paymentMethod: PaymentMethod): string {
     return paymentMethod.code;
+  }
+
+  async insert(paymentMethod: PaymentMethod) {
+    return (
+      await this.config.sdk.CreatePaymentMethod(
+        {
+          input: {
+            name: paymentMethod.name,
+            code: paymentMethod.code,
+            description: paymentMethod.description,
+            enabled: paymentMethod.enabled,
+            checker: paymentMethod.checker
+              ? {
+                  code: paymentMethod.checker.code,
+                  arguments: paymentMethod.checker.args,
+                }
+              : undefined,
+            handler: {
+              code: paymentMethod.handler?.code,
+              arguments: paymentMethod.handler?.args,
+            },
+          },
+        },
+        this.config.headers,
+      )
+    ).data.createPaymentMethod.id;
   }
 }

@@ -9,28 +9,32 @@ import { VendureSyncShippingMethod } from './types/shippingMethod';
 import { VendureSyncTaxCategory } from './types/taxCategory';
 import { VendureSyncTaxRate } from './types/taxRate';
 
-type Common<T, U> = {
-  [P in keyof T & keyof U]: T[P] | T[P];
-};
-
 const DEFAULT = 'default';
 const DEFAULT_CODE = '__default_channel__';
 
 export async function vendureImport(config: VendureSyncConfig) {
-    /**
-     * Import default settings
-     */
-    await importType(new VendureSyncZone(config)); // global
-    // await updateChannel(channelconfig));
-    // await importType(new VendureSyncCountry(config)); // global
-    // await importType(new VendureSyncTaxCategory(config)); // global
-    // await importType(new VendureSyncTaxRate(config)); // global
-    // await importType(new VendureSyncPaymentMethod(config)); // assign
-    // await importType(new VendureSyncShippingMethod(config)); //assign
-    // await importType(new VendureSyncRole(config));
+  /**
+   * Import default settings
+   */
+  const zone = new VendureSyncZone(config);
+  await importType(zone); // global
+
+  await importType(new VendureSyncCountry(config)); // global
+
+  const taxCategory = new VendureSyncTaxCategory(config);
+  await importType(taxCategory); // global
+
+  // taxRate has dependencies on taxCategory and zone
+  await importType(new VendureSyncTaxRate(config, taxCategory, zone)); // global
+  await importType(new VendureSyncPaymentMethod(config)); // assign
+  await importType(new VendureSyncShippingMethod(config)); //assign
+  // await updateChannel(channelconfig));
+  // await importType(new VendureSyncRole(config));
 }
 
-async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T) {
+async function importType<U, T extends VendureSyncAbstract<U>>(
+  vendureSyncType: T,
+) {
   const filePath = vendureSyncType.getFilePath();
   console.log(`Import ${filePath}`);
 
@@ -39,29 +43,13 @@ async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: 
     const displayString = `${vendureSyncType.name} ${vendureSyncType.key(type)}`;
 
     try {
-      const id = await vendureSyncType.getUUid(type);
-
-      if (id) {
-        await vendureSyncType.update(id, type);
-        console.log(`Update ${displayString}`)
-
-      } else {
-        await vendureSyncType.insert(type);
-        console.log(`Insert new ${displayString}`)
-      }
+      const result = await vendureSyncType.import(type);
+      console.log(`${result} ${displayString}`);
     } catch (e) {
       console.log(`Error for ${displayString} : ${e}`);
     }
   }
 }
-
-
-
-
-
-
-
-
 
 //   let DIRECTORY = source;
 //   /**
@@ -196,7 +184,6 @@ async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: 
 
 //     return channelId;
 //   }
-
 
 //   /**
 //    * Todo : import association between countries and zones
@@ -862,6 +849,5 @@ async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: 
 //     );
 //     return JSON.stringify(values);
 //   }
-
 
 // }

@@ -1,22 +1,19 @@
 import { VendureSyncAbstract } from './abstract';
 import { ShippingMethod } from 'generated';
 
-export class VendureSyncShippingMethod
-  extends VendureSyncAbstract<ShippingMethod>
-{
+export class VendureSyncShippingMethod extends VendureSyncAbstract<ShippingMethod> {
   setName() {
     this.name = 'shippingMethod';
   }
 
   async export() {
-    const {
-      data: { shippingMethods },
-    } = await this.config.sdk.ShippingMethods(undefined, this.config.headers);
-    return shippingMethods;
+    return (await this.config.sdk.ShippingMethods(undefined, this.config.headers)).data
+      .shippingMethods.items;
   }
 
   async keys() {
-    return (await this.config.sdk.ShippingMethodKeys(undefined, this.config.headers)).data.shippingMethods.items;
+    return (await this.config.sdk.ShippingMethodKeys(undefined, this.config.headers)).data
+      .shippingMethods.items;
   }
 
   /**
@@ -24,5 +21,28 @@ export class VendureSyncShippingMethod
    */
   key(sm: ShippingMethod): string {
     return sm.code;
+  }
+
+  async insert(shippingMethod: ShippingMethod) {
+    return (
+      await this.config.sdk.CreateShippingMethod(
+        {
+          input: {
+            code: shippingMethod.code,
+            translations: shippingMethod.translations,
+            fulfillmentHandler: shippingMethod.fulfillmentHandlerCode,
+            checker: {
+              code: shippingMethod.checker.code,
+              arguments: shippingMethod.checker.args,
+            },
+            calculator: {
+              code: shippingMethod.calculator.code,
+              arguments: shippingMethod.calculator.args,
+            },
+          },
+        },
+        this.config.headers,
+      )
+    ).data.createShippingMethod.id;
   }
 }

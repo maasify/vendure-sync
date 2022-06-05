@@ -9,10 +9,7 @@ export class VendureSyncRole
   }
 
   async export() {
-    const {
-      data: { roles },
-    } = await this.config.sdk.Roles(undefined, this.config.headers);
-    return roles;
+    return (await this.config.sdk.Roles(undefined, this.config.headers)).data.roles.items;
   }
 
   async keys() {

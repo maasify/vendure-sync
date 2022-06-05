@@ -1,22 +1,18 @@
 import { VendureSyncAbstract } from './abstract';
 import { TaxCategory } from 'generated';
 
-export class VendureSyncTaxCategory
-  extends VendureSyncAbstract<TaxCategory>
-{
+export class VendureSyncTaxCategory extends VendureSyncAbstract<TaxCategory> {
   setName() {
     this.name = 'taxCategory';
   }
 
   async export() {
-    const {
-      data: { taxCategories },
-    } = await this.config.sdk.TaxCategories(undefined, this.config.headers);
-    return taxCategories;
+    return (await this.config.sdk.TaxCategories(undefined, this.config.headers)).data.taxCategories;
   }
 
   async keys() {
-    return (await this.config.sdk.TaxCategoryKeys(undefined, this.config.headers)).data.taxCategories;
+    return (await this.config.sdk.TaxCategoryKeys(undefined, this.config.headers)).data
+      .taxCategories;
   }
 
   /**
@@ -24,5 +20,17 @@ export class VendureSyncTaxCategory
    */
   key(taxCategory: TaxCategory): string {
     return taxCategory.name;
+  }
+
+  async insert(taxCategory: TaxCategory) {
+    return (await this.config.sdk.CreateTaxCategory(
+      {
+        input: {
+          name: taxCategory.name,
+          isDefault: taxCategory.isDefault,
+        },
+      },
+      this.config.headers,
+    )).data.createTaxCategory.id;
   }
 }
