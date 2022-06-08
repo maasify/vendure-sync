@@ -33,9 +33,6 @@ export async function vendureExport(config: VendureSyncConfig) {
   await exportType(new VendureSyncCountry(config));
   await exportType(new VendureSyncTaxCategory(config));
   await exportType(new VendureSyncTaxRate(config));
-  await exportType(new VendureSyncPaymentMethod(config));
-  await exportType(new VendureSyncShippingMethod(config));
-  await exportType(new VendureSyncRole(config));
 
   /**
    * Read the generated channel list
@@ -60,6 +57,9 @@ export async function vendureExport(config: VendureSyncConfig) {
     await exportType(new VendureSyncFacet(config));
     await exportType(new VendureSyncCollection(config));
     await exportType(new VendureSyncProduct(config));
+    await exportType(new VendureSyncPaymentMethod(config));
+    await exportType(new VendureSyncShippingMethod(config));
+    await exportType(new VendureSyncRole(config));
   }
 }
 
