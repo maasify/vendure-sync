@@ -28,8 +28,8 @@ export async function vendureExport(config: VendureSyncConfig) {
   /**
    * Export global settings
    */
-  await exportType(new VendureSyncZone(config));
   await exportType(new VendureSyncChannel(config));
+  await exportType(new VendureSyncZone(config));
   await exportType(new VendureSyncCountry(config));
   await exportType(new VendureSyncTaxCategory(config));
   await exportType(new VendureSyncTaxRate(config));
@@ -52,7 +52,7 @@ export async function vendureExport(config: VendureSyncConfig) {
      */
     fs.mkdirSync(config.sourceDir, { recursive: true });
 
-    // export catalog
+    // export channel-based entities
     await exportType(new VendureSyncAsset(config));
     await exportType(new VendureSyncFacet(config));
     await exportType(new VendureSyncCollection(config));

@@ -99,7 +99,7 @@ export abstract class VendureSyncAbstract<T> {
    */
   abstract export(): Promise<any[]>;
 
-  async update(id: string, type: T): Promise<void> {
+  async update(id: string, type: T): Promise<string> {
     throw `Update not yet implemented`;
   }
 

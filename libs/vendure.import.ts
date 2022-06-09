@@ -1,4 +1,4 @@
-/* tslint:disable:no-console */
+import path from 'path';
 import { VendureSyncConfig } from './config.interface';
 import { VendureSyncAbstract } from './types/abstract';
 import { VendureSyncZone } from './types/zone';
@@ -8,33 +8,50 @@ import { VendureSyncRole } from './types/role';
 import { VendureSyncShippingMethod } from './types/shippingMethod';
 import { VendureSyncTaxCategory } from './types/taxCategory';
 import { VendureSyncTaxRate } from './types/taxRate';
+import { Channel } from 'generated';
+import { VendureSyncChannel } from './types/channel';
 
 const DEFAULT = 'default';
 const DEFAULT_CODE = '__default_channel__';
 
 export async function vendureImport(config: VendureSyncConfig) {
   /**
-   * Import default settings
+   * Import global settings
    */
-  const zone = new VendureSyncZone(config);
-  await importType(zone); // global
-
-  await importType(new VendureSyncCountry(config)); // global
-
-  const taxCategory = new VendureSyncTaxCategory(config);
-  await importType(taxCategory); // global
-
+  const zone = await importType(new VendureSyncZone(config));
+  await importType(new VendureSyncCountry(config));
+  const taxCategory = await importType(new VendureSyncTaxCategory(config));
   // taxRate has dependencies on taxCategory and zone
-  await importType(new VendureSyncTaxRate(config, taxCategory, zone)); // global
-  await importType(new VendureSyncPaymentMethod(config)); // assign
-  await importType(new VendureSyncShippingMethod(config)); //assign
-  // await updateChannel(channelconfig));
-  // await importType(new VendureSyncRole(config));
+  await importType(new VendureSyncTaxRate(config, taxCategory, zone));
+
+  /**
+   * Read the channels list
+   */
+  const channels: Channel[] = require(path.join(config.sourceDir, 'channel.json'));
+
+  const baseSourceDir = config.sourceDir;
+  for (const channel of channels) {
+    config.headers['vendure-token'] = channel.token;
+    config.sourceDir = path.join(baseSourceDir, channel.code);
+    
+    await importType(new VendureSyncChannel(config));
+    await importType(new VendureSyncPaymentMethod(config)); // assign
+    await importType(new VendureSyncShippingMethod(config)); //assign
+    //await importType(new VendureSyncRole(config));
+  }
 }
 
-async function importType<U, T extends VendureSyncAbstract<U>>(
-  vendureSyncType: T,
-) {
+/**
+ * This function will
+ * - read the exported json
+ * - iterate over entities
+ *   - call the VendureSync.import method for each entity
+ * - return the VendureSync
+ *
+ * @param vendureSyncType VendureSyncAbstract
+ * @returns VendureSyncAbstract
+ */
+async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T): Promise<T> {
   const filePath = vendureSyncType.getFilePath();
   console.log(`Import ${filePath}`);
 
@@ -49,6 +66,7 @@ async function importType<U, T extends VendureSyncAbstract<U>>(
       console.log(`Error for ${displayString} : ${e}`);
     }
   }
+  return vendureSyncType;
 }
 
 //   let DIRECTORY = source;
