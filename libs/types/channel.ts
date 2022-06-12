@@ -7,7 +7,7 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
   constructor(
     config: VendureSyncConfig,
     // Dependencies
-    private zone?: VendureSyncZone,
+    private zoneSync?: VendureSyncZone,
   ) {
     super(config);
   }
@@ -57,7 +57,7 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
   }
 
   async getInsertUpdateInput(channel: Channel): Promise<CreateChannelInput> {
-    if (!this.zone) {
+    if (!this.zoneSync) {
       throw `Missing zone dependency`;
     }
     if (!channel.defaultTaxZone) {
@@ -73,8 +73,8 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
       defaultLanguageCode: channel.defaultLanguageCode,
       pricesIncludeTax: channel.pricesIncludeTax,
       currencyCode: channel.currencyCode,
-      defaultTaxZoneId: await this.zone.getUUid(channel.defaultTaxZone),
-      defaultShippingZoneId: await this.zone.getUUid(channel.defaultShippingZone),
+      defaultTaxZoneId: await this.zoneSync.getUUid(channel.defaultTaxZone),
+      defaultShippingZoneId: await this.zoneSync.getUUid(channel.defaultShippingZone),
     };
   }
 }

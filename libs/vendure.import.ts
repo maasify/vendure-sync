@@ -10,6 +10,8 @@ import { VendureSyncTaxCategory } from './types/taxCategory';
 import { VendureSyncTaxRate } from './types/taxRate';
 import { Channel } from 'generated';
 import { VendureSyncChannel } from './types/channel';
+import { VendureSyncAsset } from './types/asset';
+import { configForChannel } from './config-channel.';
 
 const DEFAULT = 'default';
 const DEFAULT_CODE = '__default_channel__';
@@ -18,12 +20,13 @@ export async function vendureImport(config: VendureSyncConfig) {
   /**
    * Import global settings
    */
-  const zone = await importType(new VendureSyncZone(config));
+  const zoneSync = await importType(new VendureSyncZone(config));
   await importType(new VendureSyncCountry(config));
-  const taxCategory = await importType(new VendureSyncTaxCategory(config));
+  const taxCategorySync = await importType(new VendureSyncTaxCategory(config));
   // taxRate has dependencies on taxCategory and zone
-  await importType(new VendureSyncTaxRate(config, taxCategory, zone));
+  await importType(new VendureSyncTaxRate(config, taxCategorySync, zoneSync));
 
+  const channelSync = new VendureSyncChannel(config, zoneSync);
   /**
    * Read the channels list
    */
@@ -31,14 +34,19 @@ export async function vendureImport(config: VendureSyncConfig) {
 
   const baseSourceDir = config.sourceDir;
   for (const channel of channels) {
-    config.headers['vendure-token'] = channel.token;
-    config.sourceDir = path.join(baseSourceDir, channel.code);
-    
-    await importType(new VendureSyncChannel(config));
-    await importType(new VendureSyncPaymentMethod(config)); // assign
-    await importType(new VendureSyncShippingMethod(config)); //assign
-    //await importType(new VendureSyncRole(config));
+
+    const channelConfig = configForChannel(config,channel);
+
+    await importOneType(channelSync, channel);
+    await importType(new VendureSyncPaymentMethod(channelConfig));
+    await importType(new VendureSyncShippingMethod(channelConfig));
+    await importType(new VendureSyncAsset(channelConfig));
   }
+
+  /**
+   * Import roles after inserting channels
+   */
+  await importType(new VendureSyncRole(config, channelSync));
 }
 
 /**
@@ -57,58 +65,22 @@ async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: 
 
   const types: U[] = await vendureSyncType.readJson();
   for (const type of types) {
-    const displayString = `${vendureSyncType.name} ${vendureSyncType.key(type)}`;
-
-    try {
-      const result = await vendureSyncType.import(type);
-      console.log(`${result} ${displayString}`);
-    } catch (e) {
-      console.log(`Error for ${displayString} : ${e}`);
-    }
+    await importOneType(vendureSyncType, type);
   }
   return vendureSyncType;
 }
 
-//   let DIRECTORY = source;
-//   /**
-//    * Get Sdk for DESTINATION Vendure API
-//    */
-//   const SDK = COMMON[InstanceEnum.DESTINATION].sdk();
-//   const token = await getToken(InstanceEnum.DESTINATION);
-//   let HEADERS = await authenticate(SDK, token);
+async function importOneType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T, only: U): Promise<T> {
+  const displayString = `${vendureSyncType.name} ${vendureSyncType.key(only)}`;
 
-//   /**
-//    * Get Foreign keys class
-//    */
-//   const FK = new Fk(SDK);
-//   FK.setHeaders(HEADERS);
-//   // Read channel in local json files
-//   const channel = await readChannel(
-//     channelCode === DEFAULT ? DEFAULT_CODE : channelCode,
-//   );
-
-//   if (!channel) {
-//     throw `Invalid channel ${channelCode}`;
-//   }
-
-//   if (channel.code === DEFAULT_CODE) {
-//     // no need to set token in header
-//     await importDefaultChannel(channel);
-//   } else {
-//     // Update directory where json are
-//     DIRECTORY = path.join(source, channel.code);
-//     channel.id = await insertOrFindChannel(channel);
-
-//     // Todo : if channel is inserted, reauthentify user on it !
-//     HEADERS = await authenticate(SDK, token);
-//     // Set channel in headers
-//     HEADERS['vendure-token'] = channel.token;
-
-//     await importChannel(channel);
-//   }
-
-//   async function importDefaultChannel(channel: Channel) {
-//   }
+  try {
+    const result = await vendureSyncType.import(only);
+    console.log(`${result} ${displayString}`);
+  } catch (e) {
+    console.log(`Error for ${displayString} : ${e}`);
+  }
+  return vendureSyncType;
+}
 
 //   async function importChannel(channel: Channel) {
 //     // Catalog
@@ -124,252 +96,6 @@ async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: 
 //     const channels: Channel[] = readJson(TypeEnum.CHANNELS);
 
 //     return channels.find((channel) => channel.code === channelCode);
-//   }
-
-//   async function updateChannel(channel: Channel) {
-//     try {
-//       const id = await FK.getChannelId(channel);
-
-//       if (id) {
-//         const input = {
-//           code: channel.code,
-//           token: channel.token,
-//           defaultLanguageCode: channel.defaultLanguageCode,
-//           pricesIncludeTax: channel.pricesIncludeTax,
-//           currencyCode: channel.currencyCode,
-//           defaultTaxZoneId: channel.defaultTaxZone
-//             ? await FK.getZoneId(channel.defaultTaxZone)
-//             : 'undefined', // should raise an exception
-//           defaultShippingZoneId: channel.defaultShippingZone
-//             ? await FK.getZoneId(channel.defaultShippingZone)
-//             : 'undefined', // should raise an exception
-//         };
-
-//         await SDK.UpdateChannel(
-//           {
-//             input: { ...input, ...{ id: id } },
-//           },
-//           HEADERS,
-//         );
-//       } else {
-//         throw `Does not exist ...`;
-//       }
-//     } catch (e) {
-//       console.log(`Error to update channel ${channel.code} : ${e}`);
-//     }
-//     FK.reset(TypeEnum.CHANNELS);
-//   }
-
-//   async function insertOrFindChannel(channel: Channel): Promise<string> {
-//     let channelId = 'NOT_FOUND';
-//     try {
-//       const id = await FK.getChannelId(channel);
-
-//       if (!id) {
-//         if (channel.defaultTaxZone && channel.defaultShippingZone) {
-//           const input = {
-//             code: channel.code,
-//             token: channel.token,
-//             defaultLanguageCode: channel.defaultLanguageCode,
-//             pricesIncludeTax: channel.pricesIncludeTax,
-//             currencyCode: channel.currencyCode,
-//             defaultTaxZoneId: await FK.getZoneId(channel.defaultTaxZone),
-//             defaultShippingZoneId: await FK.getZoneId(
-//               channel.defaultShippingZone,
-//             ),
-//           };
-
-//           const response = await SDK.CreateChannel(
-//             {
-//               input: input as Required<CreateChannelInput>,
-//             },
-//             // Channel create is only done from default channel
-//             getHeadersForDefaultChannel(HEADERS),
-//           );
-//           channelId = (response.data.createChannel as Channel).id;
-//           console.log(`Insert channel ${channelId}`);
-//         } else {
-//           throw `Missing defaultTaxZone or defaultShippingZone`;
-//         }
-//       } else {
-//         console.log(`Find channel ${id}`);
-//         channelId = id;
-//       }
-//     } catch (e) {
-//       console.log(`Error to insert channel ${channel.code} : ${e}`);
-//     }
-//     FK.reset(TypeEnum.CHANNELS);
-
-//     return channelId;
-//   }
-
-//   /**
-//    * Todo : import association between countries and zones
-//    */
-//   async function importCountries() {
-//     const countries: CountryList = readJson(TypeEnum.COUNTRIES);
-
-//     for (const country of countries.items) {
-//       try {
-//         const id = await FK.getCountryId(country);
-
-//         if (id) {
-//           throw `Update not yet implemented`;
-//         } else {
-//           await SDK.CreateCountry(
-//             {
-//               input: {
-//                 code: country.code,
-//                 translations: country.translations,
-//                 enabled: country.enabled,
-//               },
-//             },
-//             HEADERS,
-//           );
-//         }
-//       } catch (e) {
-//         console.log(`Error for country ${country.code} : ${e}`);
-//       }
-//     }
-//     FK.reset(TypeEnum.COUNTRIES);
-//   }
-
-//   async function importTaxCategories() {
-//     const taxCategories: TaxCategory[] = readJson(TypeEnum.TAX_CATEGORIES);
-
-//     for (const taxCategory of taxCategories) {
-//       try {
-//         const id = await FK.getTaxCategoryId(taxCategory);
-
-//         if (id) {
-//           throw `Update not yet implemented`;
-//         } else {
-//           await SDK.CreateTaxCategory(
-//             {
-//               input: {
-//                 name: taxCategory.name,
-//                 isDefault: taxCategory.isDefault,
-//               },
-//             },
-//             HEADERS,
-//           );
-//         }
-//       } catch (e) {
-//         console.log(`Error for taxCategory ${taxCategory.name} : ${e}`);
-//       }
-//     }
-//     FK.reset(TypeEnum.TAX_CATEGORIES);
-//   }
-
-//   async function importTaxRates() {
-//     const taxRates: TaxRateList = readJson(TypeEnum.TAX_RATES);
-
-//     for (const taxRate of taxRates.items) {
-//       try {
-//         const id = await FK.getTaxRateId(taxRate);
-
-//         if (id) {
-//           throw `Update not yet implemented`;
-//         } else {
-//           const input = {
-//             name: taxRate.name,
-//             value: taxRate.value,
-//             categoryId: await FK.getTaxCategoryIdOrDie(taxRate.category),
-//             enabled: taxRate.enabled,
-//             zoneId: await FK.getZoneIdOrDie(taxRate.zone),
-//           };
-
-//           await SDK.CreateTaxRate(
-//             {
-//               input,
-//             },
-//             HEADERS,
-//           );
-//         }
-//       } catch (e) {
-//         console.log(`Error for taxRate ${taxRate.name} : ${e}`);
-//       }
-//     }
-//     FK.reset(TypeEnum.TAX_RATES);
-//   }
-
-//   async function importPaymentMethods() {
-//     const paymentMethods: PaymentMethodList = readJson(
-//       TypeEnum.PAYMENT_METHODS,
-//     );
-
-//     for (const paymentMethod of paymentMethods.items) {
-//       try {
-//         const id = await FK.getPaymentMethodId(paymentMethod);
-
-//         if (id) {
-//           throw `Update not yet implemented`;
-//         } else {
-//           await SDK.CreatePaymentMethod(
-//             {
-//               input: {
-//                 name: paymentMethod.name,
-//                 code: paymentMethod.code,
-//                 description: paymentMethod.description,
-//                 enabled: paymentMethod.enabled,
-//                 checker: paymentMethod.checker
-//                   ? {
-//                       code: paymentMethod.checker.code,
-//                       arguments: paymentMethod.checker.args,
-//                     }
-//                   : undefined,
-//                 handler: {
-//                   code: paymentMethod.handler?.code,
-//                   arguments: paymentMethod.handler?.args,
-//                 },
-//               },
-//             },
-//             HEADERS,
-//           );
-//         }
-//       } catch (e) {
-//         console.log(`Error for paymentMethod ${paymentMethod.name} : ${e}`);
-//       }
-//     }
-//     FK.reset(TypeEnum.PAYMENT_METHODS);
-//   }
-
-//   async function importShippingMethods() {
-//     const shippingMethods: ShippingMethodList = readJson(
-//       TypeEnum.SHIPPING_METHODS,
-//     );
-
-//     for (const shippingMethod of shippingMethods.items) {
-//       try {
-//         const id = await FK.getShippingMethodId(shippingMethod);
-
-//         if (id) {
-//           throw `Update not yet implemented`;
-//         } else {
-//           await SDK.CreateShippingMethod(
-//             {
-//               input: {
-//                 code: shippingMethod.code,
-//                 translations: shippingMethod.translations,
-//                 fulfillmentHandler: shippingMethod.fulfillmentHandlerCode,
-//                 checker: {
-//                   code: shippingMethod.checker.code,
-//                   arguments: shippingMethod.checker.args,
-//                 },
-//                 calculator: {
-//                   code: shippingMethod.calculator.code,
-//                   arguments: shippingMethod.calculator.args,
-//                 },
-//               },
-//             },
-//             HEADERS,
-//           );
-//         }
-//       } catch (e) {
-//         console.log(`Error for shippingMethod ${shippingMethod.name} : ${e}`);
-//       }
-//     }
-//     FK.reset(TypeEnum.SHIPPING_METHODS);
 //   }
 
 //   async function importRoles() {

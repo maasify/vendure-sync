@@ -7,8 +7,8 @@ export type EntityKey = {
 };
 
 enum ImportResult {
-  UPDATE,
-  INSERT
+  UPDATE = 'Update',
+  INSERT = 'Insert'
 }
 export abstract class VendureSyncAbstract<T> {
   /**
@@ -91,6 +91,12 @@ export abstract class VendureSyncAbstract<T> {
     }));
   }
 
+  async getUUidOrUndefined(type: T): Promise<string|undefined> {
+    try {
+      return await this.getUUid(type);
+    } catch(e) {}
+  }
+
   /**
    * Should query to list all this type entities.
    *
@@ -115,13 +121,8 @@ export abstract class VendureSyncAbstract<T> {
    */
   async import(entity: T): Promise<ImportResult> {
     const key = this.key(entity);
-    let id = '';
 
-    try {
-      id = await this.getUUid(entity);
-    } catch (e) {
-
-    }
+    const id = await this.getUUidOrUndefined(entity);
 
     if (id) {
       await this.update(id, entity);

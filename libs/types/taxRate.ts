@@ -8,8 +8,8 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
   constructor(
     config: VendureSyncConfig,
     // Dependencies
-    private taxCategory?: VendureSyncTaxCategory,
-    private zone?: VendureSyncZone,
+    private taxCategorySync?: VendureSyncTaxCategory,
+    private zoneSync?: VendureSyncZone,
   ) {
     super(config);
   }
@@ -23,7 +23,7 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
   }
 
   async keys() {
-    return (await this.config.sdk.TaxRates(undefined, this.config.headers)).data.taxRates.items;
+    return (await this.config.sdk.TaxRateKeys(undefined, this.config.headers)).data.taxRates.items;
   }
 
   /**
@@ -34,23 +34,23 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
   }
 
   async insert(taxRate: TaxRate) {
-    if (this.taxCategory && this.zone) {
-      return (
-        await this.config.sdk.CreateTaxRate(
-          {
-            input: {
-              name: taxRate.name,
-              value: taxRate.value,
-              enabled: taxRate.enabled,
-              categoryId: await this.taxCategory.getUUid(taxRate.category),
-              zoneId: await this.zone.getUUid(taxRate.zone),
-            },
-          },
-          this.config.headers,
-        )
-      ).data.createTaxRate.id;
-    } else {
-      throw `Missing taxCategory and zone dependencies`
+    if (!this.taxCategorySync || !this.zoneSync) {
+      throw `Missing taxCategory or zone dependencies`;
     }
+
+    return (
+      await this.config.sdk.CreateTaxRate(
+        {
+          input: {
+            name: taxRate.name,
+            value: taxRate.value,
+            enabled: taxRate.enabled,
+            categoryId: await this.taxCategorySync.getUUid(taxRate.category),
+            zoneId: await this.zoneSync.getUUid(taxRate.zone),
+          },
+        },
+        this.config.headers,
+      )
+    ).data.createTaxRate.id;
   }
 }
