@@ -1,0 +1,13 @@
+generates:
+  generated.ts:
+    schema: 'schema-admin.graphql'
+    documents: 'gql/**/*.gql'
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
+    config:
+      rawRequest: true
+      skipTypename: true
+      namingConvention:
+        enumValues: keep
