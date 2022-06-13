@@ -7,12 +7,12 @@ export class VendureSyncShippingMethod extends VendureSyncAbstract<ShippingMetho
   }
 
   async export() {
-    return (await this.config.sdk.ShippingMethods(undefined, this.config.headers)).data
+    return (await this.config.sdk().ShippingMethods(undefined, await this.config.headers())).data
       .shippingMethods.items;
   }
 
   async keys() {
-    return (await this.config.sdk.ShippingMethodKeys(undefined, this.config.headers)).data
+    return (await this.config.sdk().ShippingMethodKeys(undefined, await this.config.headers())).data
       .shippingMethods.items;
   }
 
@@ -25,7 +25,7 @@ export class VendureSyncShippingMethod extends VendureSyncAbstract<ShippingMetho
 
   async insert(shippingMethod: ShippingMethod) {
     return (
-      await this.config.sdk.CreateShippingMethod(
+      await this.config.sdk().CreateShippingMethod(
         {
           input: {
             code: shippingMethod.code,
@@ -41,7 +41,7 @@ export class VendureSyncShippingMethod extends VendureSyncAbstract<ShippingMetho
             },
           },
         },
-        this.config.headers,
+        await this.config.headers(),
       )
     ).data.createShippingMethod.id;
   }

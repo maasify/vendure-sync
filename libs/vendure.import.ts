@@ -1,5 +1,4 @@
-import path from 'path';
-import { VendureSyncConfig } from './config.interface';
+import { VendureSyncConfig } from './config';
 import { VendureSyncAbstract } from './types/abstract';
 import { VendureSyncZone } from './types/zone';
 import { VendureSyncCountry } from './types/country';
@@ -11,10 +10,8 @@ import { VendureSyncTaxRate } from './types/taxRate';
 import { Channel } from 'generated';
 import { VendureSyncChannel } from './types/channel';
 import { VendureSyncAsset } from './types/asset';
-import { configForChannel } from './config-channel.';
 
 const DEFAULT = 'default';
-const DEFAULT_CODE = '__default_channel__';
 
 export async function vendureImport(config: VendureSyncConfig) {
   /**
@@ -27,22 +24,18 @@ export async function vendureImport(config: VendureSyncConfig) {
   await importType(new VendureSyncTaxRate(config, taxCategorySync, zoneSync));
 
   const channelSync = new VendureSyncChannel(config, zoneSync);
-  /**
-   * Read the channels list
-   */
-  const channels: Channel[] = require(path.join(config.sourceDir, 'channel.json'));
 
-  const baseSourceDir = config.sourceDir;
-  for (const channel of channels) {
-
-    const channelConfig = configForChannel(config,channel);
+//  const baseSourceDir = config.sourceDir;
+  for (const channel of config.getChannels()) {
+    config.setChannel(channel)
 
     await importOneType(channelSync, channel);
-    await importType(new VendureSyncPaymentMethod(channelConfig));
-    await importType(new VendureSyncShippingMethod(channelConfig));
-    await importType(new VendureSyncAsset(channelConfig));
+    await importType(new VendureSyncPaymentMethod(config));
+    await importType(new VendureSyncShippingMethod(config));
+    await importType(new VendureSyncAsset(config));
   }
 
+  config.unsetChannel();
   /**
    * Import roles after inserting channels
    */
@@ -60,17 +53,20 @@ export async function vendureImport(config: VendureSyncConfig) {
  * @returns VendureSyncAbstract
  */
 async function importType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T): Promise<T> {
-  const filePath = vendureSyncType.getFilePath();
+  const filePath = vendureSyncType.config.getFilePath(vendureSyncType.name);
   console.log(`Import ${filePath}`);
 
-  const types: U[] = await vendureSyncType.readJson();
+  const types: U[] = await vendureSyncType.config.readJson(vendureSyncType.name);
   for (const type of types) {
     await importOneType(vendureSyncType, type);
   }
   return vendureSyncType;
 }
 
-async function importOneType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T, only: U): Promise<T> {
+async function importOneType<U, T extends VendureSyncAbstract<U>>(
+  vendureSyncType: T,
+  only: U,
+): Promise<T> {
   const displayString = `${vendureSyncType.name} ${vendureSyncType.key(only)}`;
 
   try {

@@ -9,11 +9,11 @@ export class VendureSyncProduct
   }
 
   async export() {
-    return (await this.config.sdk.Products(undefined, this.config.headers)).data.products.items;
+    return (await this.config.sdk().Products(undefined, await this.config.headers())).data.products.items;
   }
 
   async keys() {
-    return (await this.config.sdk.ProductKeys(undefined, this.config.headers)).data.products.items;
+    return (await this.config.sdk().ProductKeys(undefined, await this.config.headers())).data.products.items;
   }
 
   /**

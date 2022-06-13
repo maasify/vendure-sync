@@ -1,5 +1,5 @@
 import path from 'path';
-import { VendureSyncConfig } from 'libs/config.interface';
+import { VendureSyncConfig } from 'libs/config';
 
 export type EntityKey = {
   id: string;
@@ -36,18 +36,6 @@ export abstract class VendureSyncAbstract<T> {
    * this.name = 'zone or whatever';
    */
   abstract setName(): void;
-
-  getFilePath(): string {
-    return path.join(this.config.sourceDir, `${this.name}.json`);
-  }
-
-  readJson(): T[] {
-    try {
-      return require(this.getFilePath());
-    } catch (e) {
-      throw `${this.getFilePath()} not readable`;
-    }
-  }
 
   /**
    * Should query for all existing entities in admin-api

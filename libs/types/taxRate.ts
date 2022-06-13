@@ -2,7 +2,7 @@ import { VendureSyncAbstract } from './abstract';
 import { TaxRate } from 'generated';
 import { VendureSyncTaxCategory } from './taxCategory';
 import { VendureSyncZone } from './zone';
-import { VendureSyncConfig } from 'libs/config.interface';
+import { VendureSyncConfig } from 'libs/config';
 
 export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
   constructor(
@@ -19,11 +19,11 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
   }
 
   async export() {
-    return (await this.config.sdk.TaxRates(undefined, this.config.headers)).data.taxRates.items;
+    return (await this.config.sdk().TaxRates(undefined, await this.config.headers())).data.taxRates.items;
   }
 
   async keys() {
-    return (await this.config.sdk.TaxRateKeys(undefined, this.config.headers)).data.taxRates.items;
+    return (await this.config.sdk().TaxRateKeys(undefined, await this.config.headers())).data.taxRates.items;
   }
 
   /**
@@ -39,7 +39,7 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
     }
 
     return (
-      await this.config.sdk.CreateTaxRate(
+      await this.config.sdk().CreateTaxRate(
         {
           input: {
             name: taxRate.name,
@@ -49,7 +49,7 @@ export class VendureSyncTaxRate extends VendureSyncAbstract<TaxRate> {
             zoneId: await this.zoneSync.getUUid(taxRate.zone),
           },
         },
-        this.config.headers,
+        await this.config.headers(),
       )
     ).data.createTaxRate.id;
   }

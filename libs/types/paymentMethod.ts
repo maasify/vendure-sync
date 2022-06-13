@@ -7,12 +7,12 @@ export class VendureSyncPaymentMethod extends VendureSyncAbstract<PaymentMethod>
   }
 
   async export() {
-    return (await this.config.sdk.PaymentMethods(undefined, this.config.headers)).data
+    return (await this.config.sdk().PaymentMethods(undefined, await this.config.headers())).data
       .paymentMethods.items;
   }
 
   async keys() {
-    return (await this.config.sdk.PaymentMethodKeys(undefined, this.config.headers)).data
+    return (await this.config.sdk().PaymentMethodKeys(undefined, await this.config.headers())).data
       .paymentMethods.items;
   }
 
@@ -25,7 +25,7 @@ export class VendureSyncPaymentMethod extends VendureSyncAbstract<PaymentMethod>
 
   async insert(paymentMethod: PaymentMethod) {
     return (
-      await this.config.sdk.CreatePaymentMethod(
+      await this.config.sdk().CreatePaymentMethod(
         {
           input: {
             name: paymentMethod.name,
@@ -44,7 +44,7 @@ export class VendureSyncPaymentMethod extends VendureSyncAbstract<PaymentMethod>
             },
           },
         },
-        this.config.headers,
+        await this.config.headers(),
       )
     ).data.createPaymentMethod.id;
   }

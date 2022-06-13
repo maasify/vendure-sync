@@ -1,6 +1,6 @@
-import { EntityKey, VendureSyncAbstract } from './abstract';
+import { VendureSyncAbstract } from './abstract';
 import { Channel, CreateChannelInput } from 'generated';
-import { VendureSyncConfig } from 'libs/config.interface';
+import { VendureSyncConfig } from 'libs/config';
 import { VendureSyncZone } from './zone';
 
 export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
@@ -17,11 +17,11 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
   }
 
   async export() {
-    return (await this.config.sdk.Channels(undefined, this.config.headers)).data.channels;
+    return (await this.config.sdk().Channels(undefined, await this.config.headers())).data.channels;
   }
 
   async keys() {
-    return (await this.config.sdk.ChannelKeys(undefined, this.config.headers)).data.channels;
+    return (await this.config.sdk().ChannelKeys(undefined, await this.config.headers())).data.channels;
   }
 
   /**
@@ -34,7 +34,7 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
   async insert(channel: Channel) {
     const input = await this.getInsertUpdateInput(channel);
 
-    const response = (await this.config.sdk.CreateChannel({ input }, this.config.headers)).data
+    const response = (await this.config.sdk().CreateChannel({ input }, await this.config.headers())).data
       .createChannel;
 
     if ('message' in response) {
@@ -47,7 +47,7 @@ export class VendureSyncChannel extends VendureSyncAbstract<Channel> {
     const input = await this.getInsertUpdateInput(channel);
 
     const response = (
-      await this.config.sdk.UpdateChannel({ input: { ...input, id } }, this.config.headers)
+      await this.config.sdk().UpdateChannel({ input: { ...input, id } }, await this.config.headers())
     ).data.updateChannel;
 
     if ('message' in response) {

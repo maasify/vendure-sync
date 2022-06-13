@@ -1,4 +1,4 @@
-import { EntityKey, VendureSyncAbstract } from './abstract';
+import { VendureSyncAbstract } from './abstract';
 import { Asset } from 'generated';
 
 export class VendureSyncAsset
@@ -9,11 +9,11 @@ export class VendureSyncAsset
   }
 
   async export() {
-    return (await this.config.sdk.Assets(undefined, this.config.headers)).data.assets.items;
+    return (await this.config.sdk().Assets(undefined, await this.config.headers())).data.assets.items;
   }
 
   async keys() {
-    return (await this.config.sdk.AssetKeys(undefined, this.config.headers)).data.assets.items;
+    return (await this.config.sdk().AssetKeys(undefined, await this.config.headers())).data.assets.items;
   }
 
   /**
@@ -22,4 +22,21 @@ export class VendureSyncAsset
   key(asset: Asset): string {
     return asset.name;
   }
+
+  async insert(taxRate: Asset) {
+    return (
+      await this.config.sdk().CreateTaxRate(
+        {
+          input: {
+            name: taxRate.name,
+            value: taxRate.value,
+            enabled: taxRate.enabled,
+            categoryId: await this.taxCategorySync.getUUid(taxRate.category),
+            zoneId: await this.zoneSync.getUUid(taxRate.zone),
+          },
+        },
+        await this.config.headers(),
+      )
+    ).data.createTaxRate.id;
+  }  
 }

@@ -7,11 +7,11 @@ export class VendureSyncTaxCategory extends VendureSyncAbstract<TaxCategory> {
   }
 
   async export() {
-    return (await this.config.sdk.TaxCategories(undefined, this.config.headers)).data.taxCategories;
+    return (await this.config.sdk().TaxCategories(undefined, await this.config.headers())).data.taxCategories;
   }
 
   async keys() {
-    return (await this.config.sdk.TaxCategoryKeys(undefined, this.config.headers)).data
+    return (await this.config.sdk().TaxCategoryKeys(undefined, await this.config.headers())).data
       .taxCategories;
   }
 
@@ -23,14 +23,14 @@ export class VendureSyncTaxCategory extends VendureSyncAbstract<TaxCategory> {
   }
 
   async insert(taxCategory: TaxCategory) {
-    return (await this.config.sdk.CreateTaxCategory(
+    return (await this.config.sdk().CreateTaxCategory(
       {
         input: {
           name: taxCategory.name,
           isDefault: taxCategory.isDefault,
         },
       },
-      this.config.headers,
+      await this.config.headers(),
     )).data.createTaxCategory.id;
   }
 }

@@ -7,11 +7,11 @@ export class VendureSyncZone extends VendureSyncAbstract<Zone> {
   }
 
   async export() {
-    return (await this.config.sdk.Zones(undefined, this.config.headers)).data.zones;
+    return (await this.config.sdk().Zones(undefined, await this.config.headers())).data.zones;
   }
 
   async keys() {
-    return (await this.config.sdk.ZoneKeys(undefined, this.config.headers)).data.zones;
+    return (await this.config.sdk().ZoneKeys(undefined, await this.config.headers())).data.zones;
   }
 
   /**
@@ -22,13 +22,13 @@ export class VendureSyncZone extends VendureSyncAbstract<Zone> {
   }
 
   async insert(zone: Zone) {
-    return (await this.config.sdk.CreateZone(
+    return (await this.config.sdk().CreateZone(
       {
         input: {
           name: zone.name,
         },
       },
-      this.config.headers,
+      await this.config.headers(),
     )).data.createZone.id;
   }
 }

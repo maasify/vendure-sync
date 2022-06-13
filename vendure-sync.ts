@@ -5,7 +5,7 @@ import { vendureExport } from './libs/vendure.export';
 import { vendureImport } from './libs/vendure.import';
 import { GraphQLClient } from 'graphql-request';
 import { getSdk, Sdk } from './generated';
-import { VendureSyncConfig } from './libs/config.interface';
+import { VendureSyncConfig } from './libs/config';
 import { VendureSyncHeader } from './libs/header.type';
 
 const TOKEN_PREFIX = 'token:';
@@ -13,8 +13,8 @@ const TOKEN_PREFIX = 'token:';
 type VendureExportOptions = {
   url: string; // is required
   directory: string; // has default value
-  token?: string;
-  keycloak?: string;
+//  token?: string;
+  keycloak: string;
   channel?: string;
 };
 
@@ -26,7 +26,7 @@ type JwtToken = {
 const program = new Command();
 program
   .description('Command line tool to import / export Vendure catalog')
-  .version(require('./package.json').version)
+  .version(require('./package.json').version);
 
 program
   .command('export')
@@ -55,42 +55,14 @@ program
 program.parse(process.argv);
 
 async function getVendureSyncConfig(options: VendureExportOptions): Promise<VendureSyncConfig> {
+  const token = await authenticateKeycloak(options.keycloak);
+
   // Get Grapqhl SDK from url
-  const sdk = await (async () => {
-    const client = new GraphQLClient(
-      options.url + (options.url.endsWith('/') ? '' : '/') + 'admin-api',
-    );
-    return getSdk(client);
-  })();
-
-  return {
+  return new VendureSyncConfig({
+    url: options.url,
     sourceDir: path.resolve(options.directory),
-    sdk,
-    headers: await (async () => {
-      // Token has the priority
-      if (options.token) {
-        return {
-          authorization: `Bearer ${options.token}`,
-        } as VendureSyncHeader;
-      }
-      if (options.keycloak) {
-        const token = await authenticateKeycloak(options.keycloak);
-        return authenticate(sdk, token);
-      }
-
-      return program.error('You must authenticate using --token or --keycloak option');
-    })(),
-  };
-}
-
-/**
- * Authenticate to Vendure Admin API
- */
-async function authenticate(sdk: Sdk, token: string): Promise<VendureSyncHeader> {
-  const response = await sdk.Authenticate({ token: token });
-  return {
-    authorization: `Bearer ${response.headers.get('vendure-auth-token')}`,
-  };
+    token
+  });
 }
 
 /**

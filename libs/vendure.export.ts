@@ -1,7 +1,6 @@
-import path from 'path';
 import * as fs from 'fs';
 import { Channel } from 'generated';
-import { VendureSyncConfig } from './config.interface';
+import { VendureSyncConfig } from './config';
 import { VendureSyncZone } from './types/zone';
 import { VendureSyncAbstract } from './types/abstract';
 import { VendureSyncChannel } from './types/channel';
@@ -23,7 +22,7 @@ export async function vendureExport(config: VendureSyncConfig) {
   /**
    * Make sure sourceDir is created
    */
-  fs.mkdirSync(config.sourceDir, { recursive: true });
+//  fs.mkdirSync(config.sourceDir, { recursive: true });
 
   /**
    * Export global settings
@@ -38,22 +37,10 @@ export async function vendureExport(config: VendureSyncConfig) {
   /**
    * Read the generated channel list
    */
-  const channels: Channel[] = require(path.join(config.sourceDir, 'channel.json'));
+//  const baseSourceDir = config.sourceDir;
+  for (const channel of config.getChannels()) {
+    config.setChannel(channel);
 
-  const baseSourceDir = config.sourceDir;
-  for (const channel of channels) {
-    // if (ignoreDefault && channel.code == '__default_channel__') {
-    //   continue;
-    // }
-
-    config.headers['vendure-token'] = channel.token;
-    config.sourceDir = path.join(baseSourceDir, channel.code);
-    /**
-     * Make sure sourceDir is created
-     */
-    fs.mkdirSync(config.sourceDir, { recursive: true });
-
-    // export channel-based entities
     await exportType(new VendureSyncAsset(config));
     await exportType(new VendureSyncFacet(config));
     await exportType(new VendureSyncCollection(config));
@@ -64,7 +51,7 @@ export async function vendureExport(config: VendureSyncConfig) {
 }
 
 async function exportType<U, T extends VendureSyncAbstract<U>>(vendureSyncType: T) {
-  const filePath = vendureSyncType.getFilePath();
+  const filePath = vendureSyncType.config.getFilePath(vendureSyncType.name);
   console.log(`Write ${vendureSyncType.name} to ${filePath}`);
 
   const result = await vendureSyncType.export();

@@ -7,11 +7,11 @@ export class VendureSyncCountry extends VendureSyncAbstract<Country> {
   }
 
   async export() {
-    return (await this.config.sdk.Countries(undefined, this.config.headers)).data.countries.items;
+    return (await this.config.sdk().Countries(undefined, await this.config.headers())).data.countries.items;
   }
 
   async keys() {
-    return (await this.config.sdk.CountryKeys(undefined, this.config.headers)).data.countries.items;
+    return (await this.config.sdk().CountryKeys(undefined, await this.config.headers())).data.countries.items;
   }
 
   /**
@@ -23,7 +23,7 @@ export class VendureSyncCountry extends VendureSyncAbstract<Country> {
 
   async insert(country: Country) {
     return (
-      await this.config.sdk.CreateCountry(
+      await this.config.sdk().CreateCountry(
         {
           input: {
             code: country.code,
@@ -31,7 +31,7 @@ export class VendureSyncCountry extends VendureSyncAbstract<Country> {
             enabled: country.enabled,
           },
         },
-        this.config.headers,
+        await this.config.headers(),
       )
     ).data.createCountry.id;
   }

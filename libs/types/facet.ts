@@ -9,11 +9,11 @@ export class VendureSyncFacet
   }
 
   async export() {
-    return (await this.config.sdk.Facets(undefined, this.config.headers)).data.facets.items;
+    return (await this.config.sdk().Facets(undefined, await this.config.headers())).data.facets.items;
   }
 
   async keys() {
-    return (await this.config.sdk.FacetKeys(undefined, this.config.headers)).data.facets.items;
+    return (await this.config.sdk().FacetKeys(undefined, await this.config.headers())).data.facets.items;
   }
 
   /**

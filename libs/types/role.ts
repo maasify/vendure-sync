@@ -17,11 +17,11 @@ export class VendureSyncRole extends VendureSyncAbstract<Role> {
   }
 
   async export() {
-    return (await this.config.sdk.Roles(undefined, this.config.headers)).data.roles.items;
+    return (await this.config.sdk().Roles(undefined, await this.config.headers())).data.roles.items;
   }
 
   async keys() {
-    return (await this.config.sdk.RoleKeys(undefined, this.config.headers)).data.roles.items;
+    return (await this.config.sdk().RoleKeys(undefined, await this.config.headers())).data.roles.items;
   }
 
   /**
@@ -34,13 +34,13 @@ export class VendureSyncRole extends VendureSyncAbstract<Role> {
   async insert(role: Role) {
     const input = await this.getInsertUpdateInput(role);
 
-    return (await this.config.sdk.CreateRole({ input }, this.config.headers)).data.createRole.id;
+    return (await this.config.sdk().CreateRole({ input }, await this.config.headers())).data.createRole.id;
   }
 
   async update(id: string, role: Role) {
     const input = await this.getInsertUpdateInput(role);
 
-    return (await this.config.sdk.UpdateRole({ input: { ...input, id } }, this.config.headers)).data
+    return (await this.config.sdk().UpdateRole({ input: { ...input, id } }, await this.config.headers())).data
       .updateRole.id;
   }
 
